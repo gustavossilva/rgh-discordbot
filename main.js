@@ -5,9 +5,16 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+import express from 'express';
 
 // Load environment variables from .env file
 dotenv.config();
+
+// Set up Express server to keep the bot running
+const app = express();
+app.get('/', (req, res) => res.send('Bot is running!'));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server is running on port ${PORT}.`));
 
 const client = new Discord.Client({partials: ["MESSAGE", "CHANNEL", "REACTION",]});
 const channel = '1164960265662631986';
