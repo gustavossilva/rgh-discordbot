@@ -12,10 +12,11 @@ dotenv.config();
 
 // Set up Express server to keep the bot running
 const app = express();
-app.get('/', (req, res) => res.send('Bot is running!'));
+app.get('/', (_, res) => res.send('Bot is running!'));
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server is running on port ${PORT}.`));
 
+// setup Discord
 const client = new Discord.Client({partials: ["MESSAGE", "CHANNEL", "REACTION",]});
 const channel = '1164960265662631986';
 client.commands = new Discord.Collection();
@@ -35,38 +36,46 @@ client.once('ready', () => {
 });
 
 client.on('messageReactionAdd', async (reaction, user) => {
-    if (reaction.message.partial) await reaction.message.fetch();
-    if (reaction.partial) await reaction.fetch();
-    if (user.bot) return;
-    if (!reaction.message.guild) return;
-    if (reaction.message.channel.id == channel) {
-        const roles = getRoles({ rolesCache: reaction.message.guild.roles.cache });
-        const emoji = emojis.find(emote => emote === reaction.emoji.name);
-        if (emoji) {
-            console.log('Adding role');
-            await reaction.message.guild.members.cache.get(user.id).roles.add(roles.get(emoji));
+    try {
+        if (reaction.message.partial) await reaction.message.fetch();
+        if (reaction.partial) await reaction.fetch();
+        if (user.bot) return;
+        if (!reaction.message.guild) return;
+        if (reaction.message.channel.id == channel) {
+            const roles = getRoles({ rolesCache: reaction.message.guild.roles.cache });
+            const emoji = emojis.find(emote => emote === reaction.emoji.name);
+            if (emoji) {
+                console.log('Adding role');
+                await reaction.message.guild.members.cache.get(user.id).roles.add(roles.get(emoji));
+            }
+        } else {
+            console.error("Emoji not recognized");
+            return;
         }
-    } else {
-        console.error("Emoji not recognized");
-        return;
+    } catch (e) {
+        console.error(e);
     }
 });
 
 client.on('messageReactionRemove', async (reaction, user) => {
-    if (reaction.message.partial) await reaction.message.fetch();
-    if (reaction.partial) await reaction.fetch();
-    if (user.bot) return;
-    if (!reaction.message.guild) return;
-    if (reaction.message.channel.id == channel) {
-        const roles = getRoles({ rolesCache: reaction.message.guild.roles.cache });
-        const emoji = emojis.find(emote => emote === reaction.emoji.name);
-        if (emoji) {
-            console.log("Removing role");
-            await reaction.message.guild.members.cache.get(user.id).roles.remove(roles.get(emoji));
+    try {
+        if (reaction.message.partial) await reaction.message.fetch();
+        if (reaction.partial) await reaction.fetch();
+        if (user.bot) return;
+        if (!reaction.message.guild) return;
+        if (reaction.message.channel.id == channel) {
+            const roles = getRoles({ rolesCache: reaction.message.guild.roles.cache });
+            const emoji = emojis.find(emote => emote === reaction.emoji.name);
+            if (emoji) {
+                console.log("Removing role");
+                await reaction.message.guild.members.cache.get(user.id).roles.remove(roles.get(emoji));
+            }
+        }else {
+            console.error("Emoji not recognized");
+            return;
         }
-    }else {
-        console.error("Emoji not recognized");
-        return;
+    } catch (e) {
+        console.error(e);
     }
 });
 
@@ -84,6 +93,8 @@ client.on('message', message =>{
         client.commands.get('reacta').execute(message, args, Discord, client);
     } else if (command === 'reactb') {
         client.commands.get('reactb').execute(message, args, Discord, client);
+    } else if (command?.includes('serverstatus')) {
+        client.commands.get('serverstatus').execute(message, args, Discord, client);        
     }
 });
 
