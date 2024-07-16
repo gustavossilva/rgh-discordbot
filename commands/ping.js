@@ -3,7 +3,7 @@ export default {
     description: "this is a ping command.",
     execute(message, _){
         try {
-            message.channel.send({ content:'pong! pub' });
+            message.channel.send({ content:'pong!' });
         } catch (e) {
             console.error(e);
         }
