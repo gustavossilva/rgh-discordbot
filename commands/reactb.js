@@ -1,4 +1,5 @@
 import { SpoilEmoji, SpoilaEmoji, SpoilbEmoji, RaiderEmoji, FCEmoji, NonFCEmoji } from "../constants/roles.js";
+import { EmbedBuilder } from 'discord.js';
 
 export default {
     name: 'reactb',
@@ -9,7 +10,7 @@ export default {
             const filtered = [...messages.values()].filter(msg => msg.author.bot);
 
             if (filtered.length !== 3) {
-                let embed = new Discord.MessageEmbed()
+                let embed = new EmbedBuilder()
                     .setColor('#ff8605')
                     .setTitle('Choose your preferred roles.')
                     .setDescription('Choosing a role will assign you to the group you wish to be associated with.\n\n'
@@ -19,7 +20,8 @@ export default {
                         +`${SpoilEmoji} for the Spoiler Chat role.\n`
                         +`${SpoilaEmoji} for the 6.5 Spoiler Chat Access Role.\n`
                         +`${SpoilbEmoji} for the 7.0 Spoiler Chat Access Role.\n`);
-                let messageEmbed = await message.channel.send(embed);
+
+                let messageEmbed = await message.channel.send({ embeds: [embed] });
                 messageEmbed.react(SpoilEmoji);
                 messageEmbed.react(RaiderEmoji);
                 messageEmbed.react(FCEmoji);

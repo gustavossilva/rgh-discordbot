@@ -1,6 +1,6 @@
 import { emojis, prefix } from './constants/roles.js'
 import { getRoles } from './utils/interactions.js';
-import Discord from 'discord.js';
+import Discord, { GatewayIntentBits, Partials, Collection } from 'discord.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -17,10 +17,17 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server is running on port ${PORT}.`));
 
 // setup Discord
-const client = new Discord.Client({partials: ["MESSAGE", "CHANNEL", "REACTION",]});
-const channel = '1164960265662631986';
-client.commands = new Discord.Collection();
+const client = new Discord.Client({ partials: [Partials.Message, Partials.Channel, Partials.Reaction,], 
+    intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMessageReactions
+]});
 
+const channel = '1164960265662631986';
+
+client.commands = new Collection();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const commandFiles = fs.readdirSync(path.join(__dirname, './commands')).filter(file => file.endsWith('.js'));
@@ -79,22 +86,21 @@ client.on('messageReactionRemove', async (reaction, user) => {
     }
 });
 
-client.on('message', message =>{
+client.on('messageCreate', message =>{
     if(!message.content.startsWith(prefix) || message.author.bot) return;
 
     const args = message.content.slice(prefix.length).split(/ +/);
-    const command = args.shift().toLowerCase();
+    const commandName = args.shift().toLowerCase();
 
-    if(command === 'ping'){
-        client.commands.get('ping').execute(message, args);
-    } else if (command === 'reactionrole') {
-        client.commands.get('reactionrole').execute(message, args, Discord, client);
-    } else if (command === 'reacta') {
-        client.commands.get('reacta').execute(message, args, Discord, client);
-    } else if (command === 'reactb') {
-        client.commands.get('reactb').execute(message, args, Discord, client);
-    } else if (command?.includes('serverstatus')) {
-        client.commands.get('serverstatus').execute(message, args, Discord, client);        
+    const command = client.commands.get(commandName);
+
+    if (!command) return;
+
+    try {
+        command.execute(message, args, Discord, client);
+    } catch (error) {
+        console.error(error);
+        message.reply('There was an error trying to execute that command!');
     }
 });
 
